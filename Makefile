@@ -36,3 +36,9 @@ down:
 
 clean:
 	rm -rf $(BIN_DIR)
+
+docker-build:
+	docker build -t abf .
+
+docker-run:
+	docker run --rm abf
