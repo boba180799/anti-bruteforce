@@ -3,6 +3,8 @@ module github.com/boba180799/anti-bruteforce
 go 1.26.0
 
 require (
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20260918162117-cecb64721679
 	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
 )

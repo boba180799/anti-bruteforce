@@ -2,6 +2,10 @@
 
 APP_NAME=anti-bruteforce
 BIN_DIR=bin
+PROTO_DIR=api/proto
+THIRD_PARTY=third_party
+GO_OUT=.
+GOPATH_BIN := $(shell go env GOPATH)/bin
 
 build:
 	@echo "Building..."
@@ -22,11 +26,17 @@ lint:
 	golangci-lint run ./...
 
 proto:
-	protoc --proto_path=api/proto \
-		--go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		--grpc-gateway_out=. --grpc-gateway_opt=paths=source_relative \
-		api/proto/v1/*.proto
+	@echo "Generating proto..."
+	protoc \
+		-I $(PROTO_DIR) \
+		-I $(THIRD_PARTY) \
+		--plugin=protoc-gen-go=$(GOPATH_BIN)/protoc-gen-go \
+		--plugin=protoc-gen-go-grpc=$(GOPATH_BIN)/protoc-gen-go-grpc \
+		--plugin=protoc-gen-grpc-gateway=$(GOPATH_BIN)/protoc-gen-grpc-gateway \
+		--go_out=. --go_opt=module=github.com/boba180799/anti-bruteforce \
+		--go-grpc_out=. --go-grpc_opt=module=github.com/boba180799/anti-bruteforce \
+		--grpc-gateway_out=. --grpc-gateway_opt=module=github.com/boba180799/anti-bruteforce \
+		$(PROTO_DIR)/v1/*.proto
 
 up:
 	docker compose -f deploy/docker-compose.yml up -d

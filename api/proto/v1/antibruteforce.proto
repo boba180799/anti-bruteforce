@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package antibruteforce.v1;
+
+option go_package = "github.com/boba180799/anti-bruteforce/api/proto/v1;pbv1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+// AntiBruteforceService — сервис защиты от подбора паролей.
+// Используется бэкендом авторизации для проверки попыток входа.
+service AntiBruteforceService {
+  // CheckAttempt проверяет попытку авторизации и сообщает,
+  // разрешена ли она согласно whitelist, blacklist и лимитам.
+  rpc CheckAttempt(CheckAttemptRequest) returns (CheckAttemptResponse) {
+    option (google.api.http) = {
+      post: "/v1/attempts:check"
+      body: "*"
+    };
+  }
+
+  // ResetBucket сбрасывает вёдра лимитов для указанного логина и/или IP.
+  // Используется администраторами после легитимного входа пользователя.
+  rpc ResetBucket(ResetBucketRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/buckets:reset"
+      body: "*"
+    };
+  }
+
+  // ListIpRules возвращает список правил (whitelist и/или blacklist)
+  // с поддержкой пагинации и фильтрации.
+  rpc ListIpRules(ListIpRulesRequest) returns (ListIpRulesResponse) {
+    option (google.api.http) = {
+      get: "/v1/ipRules"
+    };
+  }
+
+  // CreateIpRule добавляет новое правило.
+  rpc CreateIpRule(CreateIpRuleRequest) returns (IpRule) {
+    option (google.api.http) = {
+      post: "/v1/ipRules"
+      body: "*"
+    };
+  }
+
+  // DeleteIpRule удаляет правило по его CIDR и типу.
+  rpc DeleteIpRule(DeleteIpRuleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/ipRules/{type}/{cidr}"
+    };
+  }
+}
+
+// CheckAttemptRequest — запрос проверки попытки авторизации.
+message CheckAttemptRequest {
+  // Логин пользователя. Обязательное поле.
+  string login = 1;
+
+  // Пароль пользователя. Обязательное поле.
+  // Используется для защиты от обратного brute-force.
+  string password = 2;
+
+  // IP-адрес клиента в текстовом виде (IPv4).
+  string ip = 3;
+}
+
+// CheckAttemptResponse — ответ проверки.
+message CheckAttemptResponse {
+  // true — попытка разрешена, false — заблокирована.
+  bool ok = 1;
+}
+
+// ResetBucketRequest — запрос сброса вёдер.
+message ResetBucketRequest {
+  // Логин, чьё ведро нужно сбросить. Опционально.
+  string login = 1;
+
+  // IP-адрес, чьё ведро нужно сбросить. Опционально.
+  string ip = 2;
+}
+
+// IpRuleType — тип правила IP-адресов.
+enum IpRuleType {
+  IP_RULE_TYPE_UNSPECIFIED = 0;
+
+  // IP_RULE_TYPE_WHITELIST — доверенные подсети.
+  // Авторизация с них разрешается безусловно.
+  IP_RULE_TYPE_WHITELIST = 1;
+
+  // IP_RULE_TYPE_BLACKLIST — запрещённые подсети.
+  // Авторизация с них отклоняется безусловно.
+  IP_RULE_TYPE_BLACKLIST = 2;
+}
+
+// IpRule — правило для одной CIDR-подсети.
+message IpRule {
+  // CIDR-подсеть, например "192.168.1.0/24".
+  string cidr = 1;
+
+  // Тип правила.
+  IpRuleType type = 2;
+
+  // Произвольное описание для администратора.
+  string description = 3;
+}
+
+// ListIpRulesRequest — запрос списка правил.
+message ListIpRulesRequest {
+  // Максимум элементов в ответе. Если 0 — сервер вернёт значение по умолчанию.
+  int32 page_size = 1;
+
+  // Токен для следующей страницы. Пусто для первой страницы.
+  string page_token = 2;
+
+  // Опциональный фильтр по типу правила.
+  // Если IP_RULE_TYPE_UNSPECIFIED — вернуть все.
+  IpRuleType filter_type = 3;
+}
+
+// ListIpRulesResponse — ответ со списком правил.
+message ListIpRulesResponse {
+  // Список правил на текущей странице.
+  repeated IpRule ip_rules = 1;
+
+  // Токен следующей страницы. Пусто, если страниц больше нет.
+  string next_page_token = 2;
+}
+
+// CreateIpRuleRequest — запрос создания правила.
+message CreateIpRuleRequest {
+  string cidr = 1;
+  IpRuleType type = 2;
+  string description = 3;
+}
+
+// DeleteIpRuleRequest — запрос удаления правила.
+message DeleteIpRuleRequest {
+  string cidr = 1;
+  IpRuleType type = 2;
+}
