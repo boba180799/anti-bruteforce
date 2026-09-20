@@ -1,6 +1,8 @@
 version: "2"
+
 run:
   tests: true
+
 linters:
   default: none
   enable:
@@ -47,29 +49,15 @@ linters:
     - unused
     - wastedassign
     - whitespace
+
   settings:
     funlen:
       lines: 150
       statements: 80
-  exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-formatters:
-  enable:
-    - gci
-    - gofmt
-    - gofumpt
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/boba180799/anti-bruteforce

@@ -1,4 +1,4 @@
-.PHONY: build run test lint proto docker-build up down clean
+.PHONY: build run test test-full lint proto proto-clean docker-build docker-run up down clean
 
 APP_NAME=anti-bruteforce
 BIN_DIR=bin
@@ -42,3 +42,8 @@ docker-build:
 
 docker-run:
 	docker run --rm abf
+
+proto-clean:
+	@echo "Cleaning generated proto files..."
+	find api/proto -name '*.pb.go' -delete
+	find api/proto -name '*.pb.gw.go' -delete
