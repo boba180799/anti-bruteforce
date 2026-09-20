@@ -1,16 +1,15 @@
 # ---- Build stage ----
 FROM golang:1.22-alpine AS builder
 
+ENV GOTOOLCHAIN=auto
+
 WORKDIR /app
 
-# Кэшируем зависимости
-COPY go.mod go.sum ./
+COPY go.mod go.su[m] ./
 RUN go mod download
 
-# Копируем исходники
 COPY . .
 
-# Собираем статический бинарь
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/anti-bruteforce ./cmd/antibruteforce
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/cli ./cmd/cli
 
