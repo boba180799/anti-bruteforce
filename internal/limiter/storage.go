@@ -120,3 +120,20 @@ func (s *Storage) cleanup() {
 		}
 	}
 }
+
+// ResetLogin сбрасывает ведро, связанное с указанным логином.
+func (s *Storage) ResetLogin(login string) {
+	s.reset("login:" + login)
+}
+
+// ResetIP сбрасывает ведро, связанное с указанным IP-адресом.
+func (s *Storage) ResetIP(ip string) {
+	s.reset("ip:" + ip)
+}
+
+func (s *Storage) reset(key string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	delete(s.buckets, key)
+}
