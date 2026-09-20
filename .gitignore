@@ -16,3 +16,6 @@
 # Временное
 /tmp/
 /coverage.out
+
+# golangci-lint migrate backup
+.golangci.yml.bck.yml
