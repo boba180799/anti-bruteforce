@@ -1,0 +1,18 @@
+# Бинарники
+/bin/
+*.exe
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Env
+.env
+.env.local
+
+# Временное
+/tmp/
+/coverage.out

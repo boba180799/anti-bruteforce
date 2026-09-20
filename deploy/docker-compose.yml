@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" # REST
+      - "9090:9090" # gRPC
+      - "9100:9100" # Prometheus metrics
+    environment:
+      - APP_LOGIN_LIMIT=10
+      - APP_PASSWORD_LIMIT=100
+      - APP_IP_LIMIT=1000
+      - APP_STORAGE=memory
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
