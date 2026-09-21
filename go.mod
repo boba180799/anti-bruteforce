@@ -4,12 +4,15 @@ go 1.26.0
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0
+	github.com/spf13/cobra v1.10.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20260918162117-cecb64721679
 	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
 )
 
 require (
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect

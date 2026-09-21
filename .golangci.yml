@@ -65,3 +65,4 @@ linters:
             - google.golang.org/protobuf
             - google.golang.org/genproto
             - github.com/grpc-ecosystem/grpc-gateway
+            - github.com/spf13/cobra

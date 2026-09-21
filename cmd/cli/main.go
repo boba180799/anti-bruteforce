@@ -2,8 +2,14 @@
 // сервиса анти-брутфорс: управление whitelist/blacklist и сброс вёдер.
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	fmt.Println("anti-bruteforce CLI")
+	if err := newRootCmd().Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
 }
