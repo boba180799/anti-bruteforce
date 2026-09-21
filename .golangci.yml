@@ -62,6 +62,7 @@ linters:
             - $gostd
             - github.com/boba180799/anti-bruteforce
             - google.golang.org/grpc
+            - google.golang.org/grpc/test/bufconn
             - google.golang.org/protobuf
             - google.golang.org/genproto
             - github.com/grpc-ecosystem/grpc-gateway
