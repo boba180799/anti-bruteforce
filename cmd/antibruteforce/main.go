@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,6 +21,7 @@ import (
 	"github.com/boba180799/anti-bruteforce/internal/limiter"
 	"github.com/boba180799/anti-bruteforce/internal/repository/memory"
 	grpcsrv "github.com/boba180799/anti-bruteforce/internal/transport/grpc"
+	httpsrv "github.com/boba180799/anti-bruteforce/internal/transport/http"
 	"github.com/boba180799/anti-bruteforce/internal/usecase"
 )
 
@@ -62,6 +64,7 @@ func run() error {
 	resetUC := usecase.NewResetBucket(storage)
 	rulesUC := usecase.NewManageRules(rules)
 
+	// --- gRPC ---
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			grpcsrv.UnaryRecoveryInterceptor(log),
@@ -77,10 +80,24 @@ func run() error {
 		return fmt.Errorf("listen %s: %w", cfg.GRPCAddr, err)
 	}
 
-	errCh := make(chan error, 1)
+	errCh := make(chan error, 2)
+
 	go func() {
 		log.Info("grpc server started", "addr", cfg.GRPCAddr)
 		if serveErr := grpcServer.Serve(lis); serveErr != nil && !errors.Is(serveErr, grpc.ErrServerStopped) {
+			errCh <- serveErr
+		}
+	}()
+
+	// --- REST через grpc-gateway ---
+	httpServer, err := httpsrv.New(ctx, cfg.HTTPAddr, cfg.GRPCAddr, log)
+	if err != nil {
+		return fmt.Errorf("http server: %w", err)
+	}
+
+	go func() {
+		log.Info("http server started", "addr", cfg.HTTPAddr)
+		if serveErr := httpServer.ListenAndServe(); serveErr != nil && !errors.Is(serveErr, http.ErrServerClosed) {
 			errCh <- serveErr
 		}
 	}()
@@ -92,6 +109,14 @@ func run() error {
 		return err
 	}
 
+	// --- Graceful shutdown ---
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Warn("http shutdown error", "err", err)
+	}
+
 	stopped := make(chan struct{})
 	go func() {
 		grpcServer.GracefulStop()
@@ -100,7 +125,7 @@ func run() error {
 
 	select {
 	case <-stopped:
-		log.Info("grpc server stopped gracefully")
+		log.Info("servers stopped gracefully")
 	case <-time.After(cfg.ShutdownTimeout):
 		log.Warn("graceful stop timeout, forcing")
 		grpcServer.Stop()
