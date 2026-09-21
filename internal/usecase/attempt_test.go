@@ -66,7 +66,6 @@ func (m *mockIPRuleStore) IsWhitelisted(ip string) bool {
 	if m.whitelisted == nil {
 		return false
 	}
-
 	return m.whitelisted(ip)
 }
 
@@ -74,16 +73,15 @@ func (m *mockIPRuleStore) IsBlacklisted(ip string) bool {
 	if m.blacklisted == nil {
 		return false
 	}
-
 	return m.blacklisted(ip)
 }
 
-func (m *mockIPRuleStore) AddWhitelist(string) error   { return nil }
-func (m *mockIPRuleStore) RemoveWhitelist(string) bool { return true }
-func (m *mockIPRuleStore) AddBlacklist(string) error   { return nil }
-func (m *mockIPRuleStore) RemoveBlacklist(string) bool { return true }
-func (m *mockIPRuleStore) ListWhitelist() []string     { return nil }
-func (m *mockIPRuleStore) ListBlacklist() []string     { return nil }
+func (m *mockIPRuleStore) AddWhitelist(string, string) error { return nil }
+func (m *mockIPRuleStore) RemoveWhitelist(string) bool       { return true }
+func (m *mockIPRuleStore) AddBlacklist(string, string) error { return nil }
+func (m *mockIPRuleStore) RemoveBlacklist(string) bool       { return true }
+func (m *mockIPRuleStore) ListWhitelist() []RuleInfo         { return nil }
+func (m *mockIPRuleStore) ListBlacklist() []RuleInfo         { return nil }
 
 // ---- Тесты ----
 
